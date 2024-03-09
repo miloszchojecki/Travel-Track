@@ -105,3 +105,21 @@ h1 {
 input[type="file"] {
   display: none;
 }
+
+.actions {
+  display: flex;
+  align-items: center;
+}
+
+.fileList {
+  list-style: none;
+  padding: 0;
+}
+
+.fileList li {
+  margin-bottom: 0.5rem;
+}
+
+.fileList button {
+  margin-left: 1rem;
+}

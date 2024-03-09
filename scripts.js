@@ -71,6 +71,20 @@ document.getElementById('fileInput').addEventListener('change', function(event) 
             polylines.push(polyline);
             map.fitBounds(polyline.getBounds());
             colorsIndex++;
+
+            const fileList = document.querySelector('.fileList');
+            const listItem = document.createElement('li');
+            listItem.textContent = file.name;
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', function() {
+                map.removeLayer(polyline);
+                fileList.removeChild(listItem);
+            });
+
+            listItem.appendChild(deleteButton);
+            fileList.appendChild(listItem);
         };
 
         reader.readAsText(file);
