@@ -1,5 +1,6 @@
 var map = L.map('map').setView([51.11044, 17.05852], 16);
-var polyline;
+var polylines = [];
+var colorsIndex = 0;
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -35,28 +36,52 @@ function toggleMenu() {
 hamburger.addEventListener("click", toggleMenu);
 
 document.getElementById('fileInput').addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
+    const files = event.target.files;
 
-    reader.onload = function(e) {
-        const gpxData = e.target.result;
-        const gpx = new DOMParser().parseFromString(gpxData, 'text/xml');
-        const trackPoints = gpx.querySelectorAll('trkpt');
-        const latlngs = [];
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
 
-        trackPoints.forEach(function(point) {
-            const lat = parseFloat(point.getAttribute('lat'));
-            const lon = parseFloat(point.getAttribute('lon'));
-            latlngs.push([lat, lon]);
-        });
+        reader.onload = function(e) {
+            const gpxData = e.target.result;
+            const gpx = new DOMParser().parseFromString(gpxData, 'text/xml');
+            const trackPoints = gpx.querySelectorAll('trkpt');
+            const latlngs = [];
 
-        if (polyline) {
-            map.removeLayer(polyline);
-        }
+            trackPoints.forEach(function(point) {
+                const lat = parseFloat(point.getAttribute('lat'));
+                const lon = parseFloat(point.getAttribute('lon'));
+                latlngs.push([lat, lon]);
+            });
 
-        polyline = L.polyline(latlngs, {color: 'blue'}).addTo(map);
-        map.fitBounds(polyline.getBounds());
-    };
+            let color;
+            if (colorsIndex === 0) {
+                color = 'blue';
+            } else if (colorsIndex === 1) {
+                color = 'red';
+            } else if (colorsIndex === 2) {
+                color = 'black';
+            } else if (colorsIndex === 3) {
+                color = 'purple';
+            } else {
+                color = getRandomColor();
+            }
 
-    reader.readAsText(file);
+            const polyline = L.polyline(latlngs, {color: color}).addTo(map);
+            polylines.push(polyline);
+            map.fitBounds(polyline.getBounds());
+            colorsIndex++;
+        };
+
+        reader.readAsText(file);
+    }
 });
+
+function getRandomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
