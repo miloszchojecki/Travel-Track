@@ -45,4 +45,3 @@ function toggleMenu() {
 }
 
 hamburger.addEventListener("click", toggleMenu);
-menuItems.forEach(menuItem => menuItem.addEventListener("click", toggleMenu));
