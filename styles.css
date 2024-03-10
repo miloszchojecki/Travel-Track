@@ -13,20 +13,6 @@ body {
   padding: 0;
 }
 
-header {
-  background-color: #e1e1e1;
-  color: #fff;
-  text-align: center;
-  position: fixed;
-  top: 0;
-  width: 100%;
-  z-index: 1;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  font-size: 24px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-}
-
 #main {
   width: calc(100% - 300px);
   margin-top: 100px;
@@ -34,8 +20,7 @@ header {
 
 #map {
   width: 100%;
-  height: calc(100vh - 63px);
-  margin-top: 63px;
+  height: 100vh;
   z-index: 98; 
 }
 
@@ -88,10 +73,11 @@ h1 {
   right: 0;
   bottom: 0;
   z-index: 99;
-  background: black;
+  background: #85cbe5;
   color: white;
   list-style: none;
   padding-top: 4rem;
+  width: 25%;
 }
 
 .showMenu {
@@ -114,6 +100,8 @@ input[type="file"] {
 .fileList {
   list-style: none;
   padding: 0;
+  margin: 2rem 4rem;
+  font-size: 1rem;
 }
 
 .fileList li {

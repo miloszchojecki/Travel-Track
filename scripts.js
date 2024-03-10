@@ -9,10 +9,6 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 const mapContainer = document.getElementById('map');
 
-function toggleMapVisibility() {
-    mapContainer.classList.toggle('hidden-map');
-}
-
 const menu = document.querySelector(".menu");
 const menuItems = document.querySelectorAll(".menuItem");
 const hamburger = document.querySelector(".hamburger");
@@ -24,12 +20,10 @@ function toggleMenu() {
         menu.classList.remove("showMenu");
         closeIcon.style.display = "none";
         menuIcon.style.display = "block";
-        toggleMapVisibility();
     } else {
         menu.classList.add("showMenu");
         closeIcon.style.display = "block";
         menuIcon.style.display = "none";
-        toggleMapVisibility();
     }
 }
 
