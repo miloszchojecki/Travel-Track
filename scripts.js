@@ -9,26 +9,6 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 const mapContainer = document.getElementById('map');
 
-const menu = document.querySelector(".menu");
-const menuItems = document.querySelectorAll(".menuItem");
-const hamburger = document.querySelector(".hamburger");
-const closeIcon = document.querySelector(".closeIcon");
-const menuIcon = document.querySelector(".menuIcon");
-
-function toggleMenu() {
-    if (menu.classList.contains("showMenu")) {
-        menu.classList.remove("showMenu");
-        closeIcon.style.display = "none";
-        menuIcon.style.display = "block";
-    } else {
-        menu.classList.add("showMenu");
-        closeIcon.style.display = "block";
-        menuIcon.style.display = "none";
-    }
-}
-
-hamburger.addEventListener("click", toggleMenu);
-
 document.getElementById('fileInput').addEventListener('change', function(event) {
     const files = event.target.files;
 
@@ -68,16 +48,29 @@ document.getElementById('fileInput').addEventListener('change', function(event) 
 
             const fileList = document.querySelector('.fileList');
             const listItem = document.createElement('li');
-            listItem.textContent = file.name;
 
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Delete';
-            deleteButton.addEventListener('click', function() {
+            let fileName = file.name.replace('.gpx', ''); 
+            if (fileName.length > 20) {
+                fileName = fileName.substring(0, 20) + '...';
+            }
+
+            const fileText = document.createElement('span');
+            fileText.classList.add('fileText');
+            fileText.textContent = fileName;
+            fileText.addEventListener('click', function() {
+                map.fitBounds(polyline.getBounds());
+            });
+
+            const deleteIcon = document.createElement('i');
+            deleteIcon.classList.add('deleteIcon', 'material-icons');
+            deleteIcon.textContent = 'delete';
+            deleteIcon.addEventListener('click', function() {
                 map.removeLayer(polyline);
                 fileList.removeChild(listItem);
             });
 
-            listItem.appendChild(deleteButton);
+            listItem.appendChild(fileText);
+            listItem.appendChild(deleteIcon);
             fileList.appendChild(listItem);
         };
 
@@ -93,3 +86,23 @@ function getRandomColor() {
     }
     return color;
 }
+
+const menu = document.querySelector(".menu");
+const menuItems = document.querySelectorAll(".menuItem");
+const hamburger = document.querySelector(".hamburger");
+const closeIcon = document.querySelector(".closeIcon");
+const menuIcon = document.querySelector(".menuIcon");
+
+function toggleMenu() {
+    if (menu.classList.contains("showMenu")) {
+        menu.classList.remove("showMenu");
+        closeIcon.style.display = "none";
+        menuIcon.style.display = "block";
+    } else {
+        menu.classList.add("showMenu");
+        closeIcon.style.display = "block";
+        menuIcon.style.display = "none";
+    }
+}
+
+hamburger.addEventListener("click", toggleMenu);
