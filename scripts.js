@@ -13,8 +13,12 @@ document.getElementById('fileInput').addEventListener('change', function (event)
     const file = event.target.files[0];
 
     if (file)
-        loadGPX(file).then(latlngs => { addTrackToMap(latlngs); addTrackToList(file.name); });
-
+        loadGPX(file).then(latlngs => { 
+            addTrackToMap(latlngs); 
+            addTrackToList(file.name); 
+            const speeds = calculateSpeed(latlngs);
+            displaySpeedOnMap(latlngs, speeds);
+        });
     document.getElementById('fileInput').value = '';
 });
 
@@ -41,7 +45,48 @@ function loadGPX(file) {
     }
     );
 }
+function degreesToRadians(degrees) {
+  return degrees * Math.PI / 180;
+}
 
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const earthRadiusKm = 6371;
+
+  const dLat = degreesToRadians(lat2 - lat1);
+  const dLon = degreesToRadians(lon2 - lon1);
+
+  const radLat1 = degreesToRadians(lat1);
+  const radLat2 = degreesToRadians(lat2);
+
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(radLat1) * Math.cos(radLat2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  const distance = earthRadiusKm * c;
+  return distance;
+}
+function calculateSpeed(latlngs) {
+  const speeds = [];
+  for (let i = 1; i < latlngs.length; i++) {
+      const lat1 = latlngs[i - 1][0];
+      const lon1 = latlngs[i - 1][1];
+      const lat2 = latlngs[i][0];
+      const lon2 = latlngs[i][1];
+      const distance = calculateDistance(lat1, lon1, lat2, lon2); // Function to calculate distance between two points
+      const timeDifference = 1; // Assuming time difference is 1 second between consecutive points (adjust as needed)
+      const speed = distance / timeDifference; // Speed in units per second
+      speeds.push(speed);
+  }
+  return speeds;
+}
+
+function displaySpeedOnMap(latlngs, speeds) {
+  latlngs.forEach(function(latlng, index) {
+      const speed = speeds[index];
+      const marker = L.marker(latlng).addTo(map);
+      marker.bindPopup(`Speed: ${speed.toFixed(2)} units/s`).openPopup();
+  });
+}
 function addTrackToMap(latlngs) {
     const polyline = L.polyline(latlngs, { color: pickColor() }).addTo(map);
     tracks.push(polyline);
