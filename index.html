@@ -24,11 +24,14 @@
       </label>
     </li>
     
-    <li><a class="menuItem" href="#">Export</a></li>
+    <li><a class="exportButton" href="#">Export</a></li>
       <ul class="fileList">
         <!-- list of added files -->
       </ul>
   </ul>
+  <button class="screenshotBtn">Take Screenshot</button>
+  <video id="screenshotVideo" style="display: none;"></video>
+  
   <button class="hamburger">
     <i class="menuIcon material-icons">menu</i>
     <i class="closeIcon material-icons">close</i>
@@ -39,6 +42,8 @@
         </div>
     </div>
   <script src="scripts.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
 </body>
 
 </html>

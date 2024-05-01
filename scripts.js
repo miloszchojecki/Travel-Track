@@ -107,6 +107,7 @@ const menuItems = document.querySelectorAll(".menuItem");
 const hamburger = document.querySelector(".hamburger");
 const closeIcon = document.querySelector(".closeIcon");
 const menuIcon = document.querySelector(".menuIcon");
+const screenshotBtn = document.querySelector(".screenshotBtn"); // Dodaj referencję do przycisku Screenshot
 
 function toggleMenu() {
     if (menu.classList.contains("showMenu")) {
@@ -121,3 +122,62 @@ function toggleMenu() {
 }
 
 hamburger.addEventListener("click", toggleMenu);
+
+screenshotBtn.addEventListener("click", function() {
+    navigator.mediaDevices.getDisplayMedia({ video: true }).then(stream => {
+        const videoElement = document.getElementById('screenshotVideo');
+        videoElement.srcObject = stream;
+        videoElement.onloadedmetadata = function(e) {
+            videoElement.play();
+            const canvas = document.createElement('canvas');
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            const imgData = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = imgData;
+            link.download = 'screenshot.png';
+            link.click();
+            stream.getTracks().forEach(track => track.stop());
+        };
+    }).catch(error => {
+        console.error('Error capturing screenshot:', error);
+    });
+});
+
+document.querySelector('.exportButton').addEventListener('click', function() {
+    exportTracks();
+});
+
+function exportTracks() {
+    if (tracks.length === 0) {
+        alert('No tracks to export!');
+        return;
+    }
+
+    const gpxContent = generateGPX();
+    const blob = new Blob([gpxContent], { type: 'text/xml' });
+    saveAs(blob, 'tracks.gpx');
+}
+
+
+function generateGPX() {
+    let gpxContent = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>';
+    gpxContent += '<gpx xmlns="http://www.topografix.com/GPX/1/1">';
+    gpxContent += '<trk>';
+    gpxContent += '<name>Tracks</name>';
+    gpxContent += '<trkseg>';
+
+    tracks.forEach(track => {
+        track.getLatLngs().forEach(latlng => {
+            gpxContent += `<trkpt lat="${latlng.lat}" lon="${latlng.lng}"></trkpt>`;
+        });
+    });
+
+    gpxContent += '</trkseg>';
+    gpxContent += '</trk>';
+    gpxContent += '</gpx>';
+
+    return gpxContent;
+}
