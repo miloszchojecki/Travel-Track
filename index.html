@@ -36,8 +36,10 @@
     </li>
     <li>
       <label class="menuItem" for="smoothnessSlider">
-          Smoothness: <span id="smoothnessValue">0.2</span>
-          <input type="range" min="0" max="1" step="0.1" value="0.2" id="smoothnessSlider">
+          Smoothness: <span id="smoothnessValue">0.0005</span>
+          <input type="range" min="0" max="0.01" step="0.0001" value="0.2" id="smoothnessSlider">
+          <input type="number" min="0" max="0.01" step="0.0001" value="0.2" id="smoothnessInput">
+          <button id="confirmSmoothness">Confirm</button>
       </label>
   </li>
   </ul>
