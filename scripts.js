@@ -13,13 +13,10 @@ const mapContainer = document.getElementById('map');
 document.getElementById('fileInput').addEventListener('change', function (event) {
   const file = event.target.files[0];
   if (file)
-    loadGPX(file).then(latlngs => { 
-
-      latlngs.forEach(function(latlng) {
-        console.log("INPUT Latitude:", latlng[0], "Longitude:", latlng[1]);
-      });
+    loadGPX(file).then(data => { 
+      stationaryBugRemover(data.timeArray, data.latlngs, 4);
       // const simplifiedLatlngs = douglasPeucker(latlngs, 0.0007); // the higher second parameter the more points we remove
-      addTrackToMap(latlngs);
+      addTrackToMap(data.latlngs);
       addTrackToList(file.name);
     });
   // Inside the document.getElementById('fileInput').addEventListener block
@@ -39,9 +36,6 @@ function douglasPeucker(points, tolerance) {
   if (points.length <= 2) {
     return points;
   }
-  // console.log("dp", points);
-  // console.log("dp", points[0]);
-
   // Find the point with the maximum distance
   let maxDistance = 0;
   let index = 0;
@@ -65,19 +59,10 @@ function douglasPeucker(points, tolerance) {
 
 //Calculates distance used in douglasPeucker
 function perpendicularDistance(point, start, end) {
-  // const startX = start[0];
-  // const startY = start[1];
-  // const endX = end[0];
-  // const endY = end[1];
-  // // console.log("dist lat", point[0],"lng", point[1])
-  // const x = point[0];
-  // const y = point[1];
-
   const startX = start.lat;
   const startY = start.lng;
   const endX = end.lat;
   const endY = end.lng;
-  // console.log("dist lat", point[0],"lng", point[1])
   const x = point.lat;
   const y = point.lng;
 
@@ -99,14 +84,25 @@ function loadGPX(file) {
       const gpxData = e.target.result;
       const gpx = new DOMParser().parseFromString(gpxData, 'text/xml');
       const trackPoints = gpx.querySelectorAll('trkpt');
+      const timeElements = gpx.getElementsByTagName('time');
       const latlngs = [];
-
+      const timeArray = [];
+      //i equal 1 bc 0th time is not connected to any point
+      for (let i = 1; i < timeElements.length; i++) {
+        const timeValue = timeElements[i].textContent;
+        const millis = Date.parse(timeValue);
+        timeArray.push(millis);
+      }
       trackPoints.forEach(function (point) {
         const lat = parseFloat(point.getAttribute('lat'));
         const lon = parseFloat(point.getAttribute('lon'));
         latlngs.push([lat, lon]);
       });
-      resolve(latlngs);
+      console.log("|time| = ", timeArray.length, " |latlngs| = ", latlngs.length);
+
+      //there should be equal number of time and latlng points
+      // if ()
+      resolve({latlngs, timeArray});
     }
     reader.readAsText(file);
   });
@@ -133,10 +129,6 @@ function makeMarkersDraggable() {
   });
 }
 
-//PRZEDE WSZYSTKIM ZROBIC UPRASZZCANIE JAK SIE NIE RUSZA
-// IDEA JAK JEST KLINKNIETY TO SPRAWDZ KTORY TO TRACK 
-// I DLA TEGO TRACKA ZMIENIAJ SMOOTHNESS TJ USUN I ZROB ZNOWU ZE ZMIENIONYM SMOOTHNSE
-
 //adds track to map
 function addTrackToMap(latlngs) {
   const polyline = L.polyline(latlngs, { color: pickColor() }).addTo(map);
@@ -159,14 +151,7 @@ function addTrackToList(fileName) {
   fileText.textContent = fileName;
   fileText.addEventListener('click', function () {
     map.fitBounds(polyline.getBounds());
-
     currentTrack = tracks[tracks.length - 1];
-    // console.log("BLAH", tracks[tracks.length - 1]);
-    // console.log("BLAH3", tracks[tracks.length - 1].getLatLngs());
-    // console.log("BLAH3", tracks[tracks.length - 1].getLatLngs()[1]);
-    // polyline.getLatLngs.forEach(function(latlng) {
-    //   console.log("ADD2LIST Latitude:", latlng[0], "Longitude:", latlng[1]);
-    // });
   });
 
   const deleteIcon = document.createElement('i');
@@ -179,7 +164,6 @@ function addTrackToList(fileName) {
     const idx = tracks.indexOf(polyline);
     tracks.splice(idx, 1);
   });
-
   listItem.appendChild(fileText);
   listItem.appendChild(deleteIcon);
   fileList.appendChild(listItem);
@@ -256,16 +240,52 @@ slider.addEventListener('change', function(event) {
   const smoothness = parseFloat(event.target.value);
   // Update the smoothness factor when the slider value changes
   document.getElementById('smoothnessValue').textContent = smoothness.toFixed(4);
-  //TODO REDRAW THE TRACK
   const latlngs = currentTrack.getLatLngs();
-  // latlngs.forEach(latlng => {
-  //   console.log("SMOTHED Latitude:", latlng.lat, "Longitude:", latlng.lng);
-  // });
   const simplifiedLatlngs = douglasPeucker(latlngs, smoothness); // the higher second parameter the more points we remove
   addTrackToMap(simplifiedLatlngs);
   var str = "Simplified " + smoothness.toString()
   addTrackToList(str);
 });
+
+// Function to calculate the distance between two points using the haversine formula
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // Earth radius in meters
+  const φ1 = lat1 * Math.PI / 180; // Convert degrees to radians
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ/2) * Math.sin(Δλ/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const distance = R * c; // Distance in meters
+  return distance;
+}
+
+// Function to calculate speed between two points
+function calculateSpeed(lat1, lon1, time1, lat2, lon2, time2) {
+  const distance = calculateDistance(lat1, lon1, lat2, lon2) / 1000; // Distance in kilometers
+  const timeDiff = (time2 - time1) / (1000 * 60 * 60); // Time difference in hours
+  const speed = distance / timeDiff; // Speed in kilometers per hour
+  return speed;
+}
+
+//simplifies places where user was stationary
+//treshhold in km/h
+function stationaryBugRemover(timeArray, latlngs, treshhold) {
+  // const latlngs = currentTrack.getLatLngs();
+  var simplifiedLatlngs = [];
+  for (let i = 0; i < latlngs.length - 1; i++) {
+    const speed = calculateSpeed(latlngs[i][0], latlngs[i][1], timeArray[i], latlngs[i+1][0], latlngs[i+1][1], timeArray[i+1]);
+    if (speed < treshhold) {} 
+    else {
+      simplifiedLatlngs.push(latlngs[i])
+    }
+  }
+  addTrackToMap(simplifiedLatlngs);
+  var str = "SimplifiedStationary " + treshhold.toString();
+  addTrackToList(str);
+}
 
 screenshotBtn.addEventListener("click", function() {
   navigator.mediaDevices.getDisplayMedia({ video: true }).then(stream => {
