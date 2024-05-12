@@ -49,11 +49,38 @@ h1 {
   text-decoration: none;
 }
 
+.exportButton {
+  display: block;
+  margin: 2rem 4rem;
+  font-size: 1.8rem;
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.exportButton:hover {
+  text-decoration: underline;
+}
+
+.exportButton a {
+  text-decoration: none;
+}
 
 .hamburger {
   position: fixed;
   z-index: 100;
   top: 1rem;
+  right: 1rem;
+  padding: 4px;
+  border: black solid 1px;
+  background: white;
+  cursor: pointer;
+}
+
+.screenshotBtn {
+  position: fixed;
+  z-index: 100;
+  top: 4rem;
   right: 1rem;
   padding: 4px;
   border: black solid 1px;
