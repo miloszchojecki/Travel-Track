@@ -28,6 +28,20 @@
       <ul class="fileList">
         <!-- list of added files -->
       </ul>
+    <li>
+        <label class="menuItem" for="markerToggle">
+            Show Markers
+            <input type="checkbox" id="markerToggle">
+        </label>
+    </li>
+    <li>
+      <label class="menuItem" for="smoothnessSlider">
+          Smoothness: <span id="smoothnessValue">0.0005</span>
+          <input type="range" min="0" max="0.01" step="0.0001" value="0.2" id="smoothnessSlider">
+          <input type="number" min="0" max="0.01" step="0.0001" value="0.2" id="smoothnessInput">
+          <button id="confirmSmoothness">Confirm</button>
+      </label>
+  </li>
   </ul>
   <button class="screenshotBtn">Take Screenshot</button>
   <video id="screenshotVideo" style="display: none;"></video>
@@ -36,7 +50,6 @@
     <i class="menuIcon material-icons">menu</i>
     <i class="closeIcon material-icons">close</i>
   </button> 
-   
     <div id="container">
         <div id="map">
         </div>
