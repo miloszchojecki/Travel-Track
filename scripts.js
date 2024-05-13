@@ -2,6 +2,7 @@
 var map = L.map('map').setView([51.11044, 17.05852], 16);
 var tracks = [];
 var currentTrack = []; //potentaily needed slider 
+let fileCounter = 0; //counts tracks
 var colorIndex = 0;
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
@@ -111,14 +112,15 @@ function loadGPX(file) {
 function makeMarkersHidden() {
   // Iterate through the marker layers and remove them from the map
   map.eachLayer(function(layer) {
-      if (layer instanceof L.Marker) {
-          map.removeLayer(layer);
-      }
+    if (layer instanceof L.Marker) {
+      map.removeLayer(layer);
+    }
   });
 }
 //makes markers draggable
 function makeMarkersDraggable() {
-  tracks.forEach(function(polyline) {
+  // tracks.forEach(function(polyline) {
+  var polyline = currentTrack;
     polyline.getLatLngs().forEach(function(latlng, index) {
       const marker = L.marker(latlng, { draggable: true }).addTo(map);
       marker.on('drag', function(event) {
@@ -126,9 +128,19 @@ function makeMarkersDraggable() {
         polyline.setLatLngs(polyline.getLatLngs().map((oldLatLng, i) => (i === index ? newLatLng : oldLatLng)));
       });
     });
-  });
+  // });
 }
-
+//removeTrackHelper
+function updateFileNumbers(deletedFileNumber) {
+  const fileTextElements = document.querySelectorAll('.fileText');
+  fileTextElements.forEach(fileText => {
+    const fileNumber = parseInt(fileText.dataset.fileNumber);
+    if (fileNumber > deletedFileNumber) {
+      fileText.dataset.fileNumber = fileNumber - 1; // Decrease file number by 1 for tracks after the deleted one
+    }
+  });
+  fileCounter--;
+}
 //adds track to map
 function addTrackToMap(latlngs) {
   const polyline = L.polyline(latlngs, { color: pickColor() }).addTo(map);
@@ -148,10 +160,13 @@ function addTrackToList(fileName) {
 
   const fileText = document.createElement('span');
   fileText.classList.add('fileText');
+  fileCounter++;
   fileText.textContent = fileName;
+  fileText.dataset.fileNumber = fileCounter;
   fileText.addEventListener('click', function () {
     map.fitBounds(polyline.getBounds());
-    currentTrack = tracks[tracks.length - 1];
+    const currTrIdx = fileText.dataset.fileNumber- 1;
+    currentTrack = tracks[currTrIdx];
   });
 
   const deleteIcon = document.createElement('i');
@@ -159,8 +174,8 @@ function addTrackToList(fileName) {
   deleteIcon.textContent = 'delete';
   deleteIcon.addEventListener('click', function () {
     map.removeLayer(polyline);
+    updateFileNumbers(fileText.dataset.fileNumber);
     fileList.removeChild(listItem);
-
     const idx = tracks.indexOf(polyline);
     tracks.splice(idx, 1);
   });
@@ -209,9 +224,7 @@ function toggleMenu() {
     menuIcon.style.display = "none";
   }
 }
-
 hamburger.addEventListener("click", toggleMenu);
-
 
 const slider = document.getElementById('smoothnessSlider');
 const input = document.getElementById('smoothnessInput');
@@ -222,7 +235,6 @@ confirmButton.addEventListener('click', function(event) {
   const smoothness = parseFloat(input.value);
   if (!isNaN(smoothness)) { // Check if input is a valid number
     slider.value = smoothness;
-    // Update smoothness value display
     document.getElementById('smoothnessValue').textContent = smoothness.toFixed(4);
     // Call the event handler for slider change to update the track
     slider.dispatchEvent(new Event('change'));
@@ -233,17 +245,16 @@ confirmButton.addEventListener('click', function(event) {
 input.addEventListener('input', function(event) {
   const smoothness = parseFloat(event.target.value);
   slider.value = smoothness;
-  // Update smoothness value display
   document.getElementById('smoothnessValue').textContent = smoothness.toFixed(4);
 });
 slider.addEventListener('change', function(event) {
   const smoothness = parseFloat(event.target.value);
-  // Update the smoothness factor when the slider value changes
   document.getElementById('smoothnessValue').textContent = smoothness.toFixed(4);
+  input.value = smoothness;
   const latlngs = currentTrack.getLatLngs();
   const simplifiedLatlngs = douglasPeucker(latlngs, smoothness); // the higher second parameter the more points we remove
   addTrackToMap(simplifiedLatlngs);
-  var str = "Simplified " + smoothness.toString()
+  var str = "Simplified " + smoothness.toString();
   addTrackToList(str);
 });
 
