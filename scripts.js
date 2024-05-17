@@ -1,5 +1,7 @@
 //Init
 var map = L.map('map').setView([51.11044, 17.05852], 16);
+var simpleMapScreenshoter = L.simpleMapScreenshoter({hidden: true}).addTo(map);
+
 var tracks = [];
 var currentTrack = []; //potentaily needed slider 
 var colorIndex = 0;
@@ -196,7 +198,11 @@ const menuItems = document.querySelectorAll(".menuItem");
 const hamburger = document.querySelector(".hamburger");
 const closeIcon = document.querySelector(".closeIcon");
 const menuIcon = document.querySelector(".menuIcon");
-const screenshotBtn = document.querySelector(".screenshotBtn"); // Dodaj referencję do przycisku Screenshot
+const screenshotBtn = document.querySelector(".screenshotBtn");
+const saveScreenshotBtn = document.querySelector("#save-button");
+const cancelScreenshotBtn = document.querySelector("#cancel-button");
+const captionCheckbox = document.querySelector("#caption-checkbox");
+const screenshotCaption = document.querySelector("#screenshot-caption");
 
 function toggleMenu() {
   if (menu.classList.contains("showMenu")) {
@@ -287,28 +293,47 @@ function stationaryBugRemover(timeArray, latlngs, treshhold) {
   addTrackToList(str);
 }
 
-screenshotBtn.addEventListener("click", function() {
-  navigator.mediaDevices.getDisplayMedia({ video: true }).then(stream => {
-    const videoElement = document.getElementById('screenshotVideo');
-    videoElement.srcObject = stream;
-    videoElement.onloadedmetadata = function(e) {
-      videoElement.play();
-      const canvas = document.createElement('canvas');
-      canvas.width = videoElement.videoWidth;
-      canvas.height = videoElement.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-      const imgData = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = imgData;
-      link.download = 'screenshot.png';
-      link.click();
-      stream.getTracks().forEach(track => track.stop());
-    };
-  }).catch(error => {
-    console.error('Error capturing screenshot:', error);
-  });
-});
+const defaultName = 'My map ' + new Date().toLocaleDateString().replace(/\./g, '-');
+
+screenshotBtn.addEventListener('click', function () {
+  document.getElementById('screenshot-options').style.display = 'block'
+  screenshotCaption.value = defaultName
+})
+
+cancelScreenshotBtn.addEventListener('click', function () {
+  document.getElementById('screenshot-options').style.display = 'none'
+})
+
+saveScreenshotBtn.addEventListener('click', function () {
+  var name = screenshotCaption.value;
+  if(!name)
+    {
+      name = defaultName;
+    }
+  simpleMapScreenshoter.takeScreen('blob', {
+      caption: function () {
+          if(captionCheckbox.checked)
+            return name
+          else
+            return null
+      },
+      captionFontSize: 24,
+      captionOffset: 18
+  }).then(blob => {
+      saveAs(blob, name+'.png')
+  }).catch(e => {
+      alert(e.toString())
+  })
+})
+
+captionCheckbox.addEventListener('change', (event) => {
+  screenshotCaption.disabled = !event.currentTarget.checked
+  })
+
+map.on('simpleMapScreenshoter.error', function (event) {
+  console.error(event.e);
+  alert('Unable to take screenshot');
+})
 
 document.querySelector('.exportButton').addEventListener('click', function() {
   exportTracks();

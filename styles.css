@@ -88,6 +88,27 @@ h1 {
   cursor: pointer;
 }
 
+#screenshot-options {
+  display: none;
+  position: fixed;
+  z-index: 100;
+  top: 6rem;
+  right: 1rem;
+  padding: 4px;
+  border: black solid 1px;
+  background: #85cbe5;
+  width: 300px;
+  height: 150px;
+  text-align: center;
+  /*vertical-align: middle;*/
+  align-content: center;
+}
+
+input {
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
 .closeIcon {
   display: none;
 }

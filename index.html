@@ -13,6 +13,8 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
      crossorigin=""></script>
+  <script src="scripts/leaflet-simple-map-screenshoter.js"></script>
+  <script src="https://unpkg.com/file-saver/dist/FileSaver.js"></script>
 </head>
 
 <body>
@@ -43,8 +45,14 @@
       </label>
   </li>
   </ul>
-  <button class="screenshotBtn">Take Screenshot</button>
-  <video id="screenshotVideo" style="display: none;"></video>
+  <button class="screenshotBtn">Save as PNG</button>
+  <div id="screenshot-options">
+    <input type="checkbox" id="caption-checkbox" name="caption-checkbox" checked />
+    <label for="caption-checkbox">Caption</label> <br>
+    <input type="text" id="screenshot-caption" placeholder="Enter caption"> <br>
+    <button id="save-button">Save</button>
+    <button id="cancel-button">Cancel</button>
+  </div>
   
   <button class="hamburger">
     <i class="menuIcon material-icons">menu</i>
@@ -55,7 +63,6 @@
         </div>
     </div>
   <script src="scripts.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 
 </body>
 
