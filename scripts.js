@@ -2,6 +2,9 @@
 var map = L.map('map').setView([51.11044, 17.05852], 16);
 var simpleMapScreenshoter = L.simpleMapScreenshoter({hidden: true}).addTo(map);
 
+var simplifyBySpeed = false;
+var simplifyByDistance = false;
+
 var tracks = [];
 var currentTrack = []; //potentaily needed slider 
 var colorIndex = 0;
@@ -16,7 +19,15 @@ document.getElementById('fileInput').addEventListener('change', function (event)
   const file = event.target.files[0];
   if (file)
     loadGPX(file).then(data => { 
-      stationaryBugRemover(data.timeArray, data.latlngs, 4);
+      // timestamps, x,y-coords, treshhold speed(km/h)
+      if(simplifyBySpeed) {
+        stationaryBugRemoverSpeed(data.timeArray, data.latlngs, 4);
+      }
+
+      // timestamps, x,y-coords, treshhold distance(meters), number of points in this radius
+      if (simplifyByDistance) {
+        stationaryBugRemoverDistance(data.latlngs, 10);
+      }
       // const simplifiedLatlngs = douglasPeucker(latlngs, 0.0007); // the higher second parameter the more points we remove
       addTrackToMap(data.latlngs);
       addTrackToList(file.name);
@@ -203,6 +214,8 @@ const saveScreenshotBtn = document.querySelector("#save-button");
 const cancelScreenshotBtn = document.querySelector("#cancel-button");
 const captionCheckbox = document.querySelector("#caption-checkbox");
 const screenshotCaption = document.querySelector("#screenshot-caption");
+const simplifyBySpeedToggle = document.getElementById('simplifyBySpeedToggle');
+const simplifyByDistanceToggle = document.getElementById('simplifyByDistanceToggle');
 
 function toggleMenu() {
   if (menu.classList.contains("showMenu")) {
@@ -215,9 +228,24 @@ function toggleMenu() {
     menuIcon.style.display = "none";
   }
 }
-
 hamburger.addEventListener("click", toggleMenu);
 
+simplifyBySpeedToggle.addEventListener('change', function(event) {
+  const isChecked = event.target.checked;
+  if (isChecked) {
+    simplifyBySpeed = true;
+  } else {
+    simplifyBySpeed = false;
+  }
+});
+simplifyByDistanceToggle.addEventListener('change', function(event) {
+  const isChecked = event.target.checked;
+  if (isChecked) {
+    simplifyByDistance = true;
+  } else {
+    simplifyByDistance = false;
+  }
+});
 
 const slider = document.getElementById('smoothnessSlider');
 const input = document.getElementById('smoothnessInput');
@@ -276,20 +304,46 @@ function calculateSpeed(lat1, lon1, time1, lat2, lon2, time2) {
   return speed;
 }
 
-//simplifies places where user was stationary
-//treshhold in km/h
-function stationaryBugRemover(timeArray, latlngs, treshhold) {
-  // const latlngs = currentTrack.getLatLngs();
+//simplifies places where user was stationary based on distance
+//treshhold in m
+function stationaryBugRemoverDistance(latlngs, treshholdDistance) {
   var simplifiedLatlngs = [];
   for (let i = 0; i < latlngs.length - 1; i++) {
-    const speed = calculateSpeed(latlngs[i][0], latlngs[i][1], timeArray[i], latlngs[i+1][0], latlngs[i+1][1], timeArray[i+1]);
-    if (speed < treshhold) {} 
+    //remove based on distance
+    var distance = calculateDistance(latlngs[i][0], latlngs[i][1], latlngs[i+1][0], latlngs[i+1][1]); // Distance in meters
+    if (distance < treshholdDistance) {
+      //IDEA: check points after given point, untill one is further than treshholdDistance
+      //      remove those closer than this treshold
+      const pointIndex = i;
+      for (let j = i; (distance < treshholdDistance) && (j < latlngs.length - 1); j++) {
+        distance = calculateDistance(latlngs[pointIndex][0], latlngs[pointIndex][1], latlngs[j+1][0], latlngs[j+1][1]);
+        i = j;
+      }
+    } 
     else {
       simplifiedLatlngs.push(latlngs[i])
     }
   }
   addTrackToMap(simplifiedLatlngs);
-  var str = "SimplifiedStationary " + treshhold.toString();
+  var str = "SimplifiedByDistance " + treshholdDistance.toString();
+  addTrackToList(str);
+}
+
+//simplifies places where user was stationary based on speed
+//treshhold in km/h
+function stationaryBugRemoverSpeed(timeArray, latlngs, treshholSpeed) {
+  // const latlngs = currentTrack.getLatLngs();
+  var simplifiedLatlngs = [];
+  for (let i = 0; i < latlngs.length - 1; i++) {
+    //remove based on speed
+    const speed = calculateSpeed(latlngs[i][0], latlngs[i][1], timeArray[i], latlngs[i+1][0], latlngs[i+1][1], timeArray[i+1]);
+    if (speed < treshholSpeed) {} 
+    else {
+      simplifiedLatlngs.push(latlngs[i])
+    }
+  }
+  addTrackToMap(simplifiedLatlngs);
+  var str = "SimplifiedBySpeed " + treshholSpeed.toString();
   addTrackToList(str);
 }
 
