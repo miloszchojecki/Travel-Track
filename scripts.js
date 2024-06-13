@@ -1,12 +1,13 @@
-//Init
+//inicjalizacja mapy z ustawieniem początkowych współrzędnych
 var map = L.map('map').setView([51.11044, 17.05852], 16);
 var simpleMapScreenshoter = L.simpleMapScreenshoter({hidden: true}).addTo(map);
 
+//flagi determinujące, czy uproszczenia ścieżek na podstawie prędkości lub odległości mają być stosowane 
 var simplifyBySpeed = false;
 var simplifyByDistance = false;
 
 var tracks = [];
-var currentTrack = []; //potentaily needed slider 
+var currentTrack = []; 
 var colorIndex = 0;
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
@@ -14,7 +15,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 const mapContainer = document.getElementById('map');
 
-//Ading tracks
+//obsługa dodawania ścieżek z pliku GPX
 document.getElementById('fileInput').addEventListener('change', function (event) {
   const file = event.target.files[0];
   if (file)
@@ -41,6 +42,7 @@ document.getElementById('fileInput').addEventListener('change', function (event)
       makeMarkersHidden();
     }
   });
+   //resetowanie wartości input, aby umożliwić ponowne dodanie tego samego pliku
   document.getElementById('fileInput').value = '';
 });
 
@@ -88,7 +90,7 @@ function perpendicularDistance(point, start, end) {
   return Math.sqrt(Math.pow(perpendicularX - x, 2) + Math.pow(perpendicularY - y, 2));
 }
 
-//Used to load file 
+//ładowanie pliku GPX
 function loadGPX(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -142,13 +144,13 @@ function makeMarkersDraggable() {
   });
 }
 
-//adds track to map
+//dodanie ścieżki do mapy i do listy ścieżek
 function addTrackToMap(latlngs) {
   const polyline = L.polyline(latlngs, { color: pickColor() }).addTo(map);
   tracks.push(polyline);
   map.fitBounds(polyline.getBounds());
 }
-//adds track to list of tracks
+//dodanie ścieżki do listy ścieżek
 function addTrackToList(fileName) {
   const fileList = document.querySelector('.fileList');
   const listItem = document.createElement('li');
@@ -182,7 +184,7 @@ function addTrackToList(fileName) {
   fileList.appendChild(listItem);
 }
 
-//picks color for track
+//wybór koloru dla ścieżki
 function pickColor() {
   let color;
   if (colorIndex === 0) {
@@ -217,6 +219,7 @@ const screenshotCaption = document.querySelector("#screenshot-caption");
 const simplifyBySpeedToggle = document.getElementById('simplifyBySpeedToggle');
 const simplifyByDistanceToggle = document.getElementById('simplifyByDistanceToggle');
 
+//funkcje do obsługi menu na stronie
 function toggleMenu() {
   if (menu.classList.contains("showMenu")) {
     menu.classList.remove("showMenu");
@@ -347,17 +350,21 @@ function stationaryBugRemoverSpeed(timeArray, latlngs, treshholSpeed) {
   addTrackToList(str);
 }
 
+//ustawienie domyślnej nazwy dla pliku zrzutu ekranu na podstawie daty
 const defaultName = 'My map ' + new Date().toLocaleDateString().replace(/\./g, '-');
 
+//robienie zrzutu ekranu
 screenshotBtn.addEventListener('click', function () {
   document.getElementById('screenshot-options').style.display = 'block'
   screenshotCaption.value = defaultName
 })
 
+//anulowanie zrzutu ekranu
 cancelScreenshotBtn.addEventListener('click', function () {
   document.getElementById('screenshot-options').style.display = 'none'
 })
 
+//zapisywanie zrzutu ekranu
 saveScreenshotBtn.addEventListener('click', function () {
   var name = screenshotCaption.value;
   if(!name)
@@ -393,6 +400,7 @@ document.querySelector('.exportButton').addEventListener('click', function() {
   exportTracks();
 });
 
+//funkcja eksportująca wszystkie ścieżki do formatu GPX
 function exportTracks() {
   if (tracks.length === 0) {
     alert('No tracks to export!');
@@ -403,6 +411,7 @@ function exportTracks() {
   saveAs(blob, 'tracks.gpx');
 }
 
+//generowanie pliku GPX zawierającego wszystkie ścieżki
 function generateGPX() {
   let gpxContent = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>';
   gpxContent += '<gpx xmlns="http://www.topografix.com/GPX/1/1">';
