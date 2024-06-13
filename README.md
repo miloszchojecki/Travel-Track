@@ -4,7 +4,7 @@
 Aplikacja umożliwia wczytywanie, wyświetlanie i eksport danych z plików GPX, które są często używane do przechowywania danych geolokalizacyjnych, takich jak trasy wycieczek rowerowych, biegowych czy tras pieszych.
 
 ### Wczytywanie pliku GPX
-1. **Dodawanie pliku GPX**: Kliknij na przycisk w menu oznaczony jako "Add file" i wybierz plik GPX z dysku komputera. Możesz dodać więcej niż jeden plik, aby porównać trasy.
+- **Dodawanie pliku GPX**: Kliknij na przycisk w menu oznaczony jako "Add file" i wybierz plik GPX z dysku komputera. Możesz dodać więcej niż jeden plik, aby porównać trasy.
    
 ### Wyświetlanie danych na mapie
 - Po wczytaniu plików, dane zostaną automatycznie wyświetlone na mapie.
