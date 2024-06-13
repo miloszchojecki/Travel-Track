@@ -33,13 +33,26 @@ h1 {
 }
 
 .menuItem {
-  display: block;
-  margin: 2rem 4rem;
-  font-size: 1.8rem;
+  display: flex;
+  flex-wrap: wrap;            
+  align-items: flex-start;    
+  margin: 2rem;
+  font-size: 1.4rem;
   color: white;
-  text-decoration: none;
   cursor: pointer;
 }
+
+.menuItem input[type="checkbox"], .menuItem input[type="range"], .menuItem input[type="number"] {
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-top: 0.5rem;  
+  width: auto;        
+}
+
+.menuItem label {
+  white-space: nowrap; 
+}
+
 
 .menuItem:hover {
   text-decoration: underline;
@@ -50,11 +63,13 @@ h1 {
 }
 
 .exportButton {
-  display: block;
-  margin: 2rem 4rem;
-  font-size: 1.8rem;
-  color: white;
+  display: flex;
+  flex-wrap: wrap;             
+  align-items: flex-start;     
+  margin: 2rem;
   text-decoration: none;
+  font-size: 1.4rem;
+  color: white;
   cursor: pointer;
 }
 
