@@ -20,20 +20,19 @@ document.getElementById('fileInput').addEventListener('change', function (event)
   const file = event.target.files[0];
   if (file)
     loadGPX(file).then(data => { 
-      // timestamps, x,y-coords, treshhold speed(km/h)
       if(simplifyBySpeed) {
+        // timestamps, x,y-coords, treshold speed(km/h)
         stationaryBugRemoverSpeed(data.timeArray, data.latlngs, 4);
       }
-
-      // timestamps, x,y-coords, treshhold distance(meters), number of points in this radius
       if (simplifyByDistance) {
+        // x,y-coords, treshold distance(meters)
         stationaryBugRemoverDistance(data.latlngs, 10);
       }
-      // const simplifiedLatlngs = douglasPeucker(latlngs, 0.0007); // the higher second parameter the more points we remove
+      // Dodanie ścieżki do mapy i listy
       addTrackToMap(data.latlngs);
       addTrackToList(file.name);
     });
-  // Inside the document.getElementById('fileInput').addEventListener block
+  // Pokazuje markery jeżeli chcemy ręcznie edytować ścieżkę, wpp. nie wyświetla markerów
   document.getElementById('markerToggle').addEventListener('change', function(event) {
     const isChecked = event.target.checked;
     if (isChecked) {
@@ -46,12 +45,13 @@ document.getElementById('fileInput').addEventListener('change', function (event)
   document.getElementById('fileInput').value = '';
 });
 
-// Simplifies the trach using douglasPeucker algorithm
+// Upraszczanie trasy z użyciem alg. Douglasa Peuckera
+// https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm
 function douglasPeucker(points, tolerance) {
   if (points.length <= 2) {
     return points;
   }
-  // Find the point with the maximum distance
+  // Znajdź punkt z maksymalną odległością
   let maxDistance = 0;
   let index = 0;
   const end = points.length - 1;
@@ -62,7 +62,7 @@ function douglasPeucker(points, tolerance) {
       index = i;
     }
   }
-  // If the maximum distance is greater than the tolerance, recursively simplify
+  // Jeśli maksymalna odległość jest większa od tolerancji, uprość rekurencyjnie
   if (maxDistance > tolerance) {
     const firstPart = douglasPeucker(points.slice(0, index + 1), tolerance);
     const secondPart = douglasPeucker(points.slice(index), tolerance);
@@ -72,7 +72,7 @@ function douglasPeucker(points, tolerance) {
   }
 }
 
-//Calculates distance used in douglasPeucker
+//Funkcja pomocnicza dla douglasPeucker; Oblicza odległość
 function perpendicularDistance(point, start, end) {
   const startX = start.lat;
   const startY = start.lng;
@@ -114,24 +114,20 @@ function loadGPX(file) {
         latlngs.push([lat, lon]);
       });
       console.log("|time| = ", timeArray.length, " |latlngs| = ", latlngs.length);
-
-      //there should be equal number of time and latlng points
-      // if ()
       resolve({latlngs, timeArray});
     }
     reader.readAsText(file);
   });
 }
-//Used to hide markers from the map
+// Funkcja ukrywająca markery na mapie
 function makeMarkersHidden() {
-  // Iterate through the marker layers and remove them from the map
   map.eachLayer(function(layer) {
       if (layer instanceof L.Marker) {
           map.removeLayer(layer);
       }
   });
 }
-//makes markers draggable
+// Funkcja umożliwiająca przeciąganie markerów
 function makeMarkersDraggable() {
   tracks.forEach(function(polyline) {
     polyline.getLatLngs().forEach(function(latlng, index) {
@@ -184,7 +180,7 @@ function addTrackToList(fileName) {
   fileList.appendChild(listItem);
 }
 
-//wybór koloru dla ścieżki
+// Wybór koloru dla ścieżki
 function pickColor() {
   let color;
   if (colorIndex === 0) {
@@ -206,6 +202,7 @@ function pickColor() {
   return color;
 }
 
+// Elementy menu
 const menu = document.querySelector(".menu");
 const menuItems = document.querySelectorAll(".menuItem");
 const hamburger = document.querySelector(".hamburger");
@@ -219,7 +216,7 @@ const screenshotCaption = document.querySelector("#screenshot-caption");
 const simplifyBySpeedToggle = document.getElementById('simplifyBySpeedToggle');
 const simplifyByDistanceToggle = document.getElementById('simplifyByDistanceToggle');
 
-//funkcje do obsługi menu na stronie
+// Toggle widoczności menu
 function toggleMenu() {
   if (menu.classList.contains("showMenu")) {
     menu.classList.remove("showMenu");
@@ -233,6 +230,7 @@ function toggleMenu() {
 }
 hamburger.addEventListener("click", toggleMenu);
 
+// Wł/Wył upraszczanie przez prędkość
 simplifyBySpeedToggle.addEventListener('change', function(event) {
   const isChecked = event.target.checked;
   if (isChecked) {
@@ -241,6 +239,7 @@ simplifyBySpeedToggle.addEventListener('change', function(event) {
     simplifyBySpeed = false;
   }
 });
+// Wł/Wył upraszczanie przez odległośc
 simplifyByDistanceToggle.addEventListener('change', function(event) {
   const isChecked = event.target.checked;
   if (isChecked) {
@@ -270,12 +269,12 @@ confirmButton.addEventListener('click', function(event) {
 input.addEventListener('input', function(event) {
   const smoothness = parseFloat(event.target.value);
   slider.value = smoothness;
-  // Update smoothness value display
+  // Wyświetl smoothness
   document.getElementById('smoothnessValue').textContent = smoothness.toFixed(4);
 });
 slider.addEventListener('change', function(event) {
   const smoothness = parseFloat(event.target.value);
-  // Update the smoothness factor when the slider value changes
+  // smoothness = wartość zczytana ze slidera
   document.getElementById('smoothnessValue').textContent = smoothness.toFixed(4);
   const latlngs = currentTrack.getLatLngs();
   const simplifiedLatlngs = douglasPeucker(latlngs, smoothness); // the higher second parameter the more points we remove
@@ -284,10 +283,10 @@ slider.addEventListener('change', function(event) {
   addTrackToList(str);
 });
 
-// Function to calculate the distance between two points using the haversine formula
+// Oblicza odległość między dwoma punktami używając "haversine formula"
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371e3; // Earth radius in meters
-  const φ1 = lat1 * Math.PI / 180; // Convert degrees to radians
+  const R = 6371e3; // Promień Ziemi w metrach
+  const φ1 = lat1 * Math.PI / 180; // Stopnie do radianów
   const φ2 = lat2 * Math.PI / 180;
   const Δφ = (lat2 - lat1) * Math.PI / 180;
   const Δλ = (lon2 - lon1) * Math.PI / 180;
@@ -295,30 +294,30 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
             Math.cos(φ1) * Math.cos(φ2) *
             Math.sin(Δλ/2) * Math.sin(Δλ/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  const distance = R * c; // Distance in meters
+  const distance = R * c; // Odl. w metrach
   return distance;
 }
 
-// Function to calculate speed between two points
+// Obliczanie prędkośi między dwoma punktami
 function calculateSpeed(lat1, lon1, time1, lat2, lon2, time2) {
-  const distance = calculateDistance(lat1, lon1, lat2, lon2) / 1000; // Distance in kilometers
-  const timeDiff = (time2 - time1) / (1000 * 60 * 60); // Time difference in hours
-  const speed = distance / timeDiff; // Speed in kilometers per hour
+  const distance = calculateDistance(lat1, lon1, lat2, lon2) / 1000; // Odl. w km
+  const timeDiff = (time2 - time1) / (1000 * 60 * 60); // Różnica czasu w godz
+  const speed = distance / timeDiff; // Prędkość w km/h
   return speed;
 }
 
-//simplifies places where user was stationary based on distance
-//treshhold in m
-function stationaryBugRemoverDistance(latlngs, treshholdDistance) {
+// Upraszczanie miejsc, gdzie użytkownik stał, bazując na odległości między nast. punktami
+// treshold podajemy w metrach 
+function stationaryBugRemoverDistance(latlngs, tresholdDistance) {
   var simplifiedLatlngs = [];
   for (let i = 0; i < latlngs.length - 1; i++) {
-    //remove based on distance
-    var distance = calculateDistance(latlngs[i][0], latlngs[i][1], latlngs[i+1][0], latlngs[i+1][1]); // Distance in meters
-    if (distance < treshholdDistance) {
-      //IDEA: check points after given point, untill one is further than treshholdDistance
-      //      remove those closer than this treshold
+    //Usuń jeśli distance < treshold
+    var distance = calculateDistance(latlngs[i][0], latlngs[i][1], latlngs[i+1][0], latlngs[i+1][1]); // Odl. w metrach
+    if (distance < tresholdDistance) {
+      //IDEA: Usuwaj wszystkie punkty poniżej tresholdu, 
+      //jeśli jakiś pkt jest już dalej niż treshold (lub koniec punktów) to opóść for
       const pointIndex = i;
-      for (let j = i; (distance < treshholdDistance) && (j < latlngs.length - 1); j++) {
+      for (let j = i; (distance < tresholdDistance) && (j < latlngs.length - 1); j++) {
         distance = calculateDistance(latlngs[pointIndex][0], latlngs[pointIndex][1], latlngs[j+1][0], latlngs[j+1][1]);
         i = j;
       }
@@ -328,17 +327,16 @@ function stationaryBugRemoverDistance(latlngs, treshholdDistance) {
     }
   }
   addTrackToMap(simplifiedLatlngs);
-  var str = "SimplifiedByDistance " + treshholdDistance.toString();
+  var str = "SimplifiedByDistance " + tresholdDistance.toString();
   addTrackToList(str);
 }
 
-//simplifies places where user was stationary based on speed
-//treshhold in km/h
+// Upraszczanie miejsc, gdzie użytkownik stał, bazując na prędkości między dwoma punktami
+// treshold podajemy w km/h
 function stationaryBugRemoverSpeed(timeArray, latlngs, treshholSpeed) {
-  // const latlngs = currentTrack.getLatLngs();
   var simplifiedLatlngs = [];
   for (let i = 0; i < latlngs.length - 1; i++) {
-    //remove based on speed
+    //Usuń jeśli speed < treshold
     const speed = calculateSpeed(latlngs[i][0], latlngs[i][1], timeArray[i], latlngs[i+1][0], latlngs[i+1][1], timeArray[i+1]);
     if (speed < treshholSpeed) {} 
     else {
