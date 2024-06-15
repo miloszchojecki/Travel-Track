@@ -21,11 +21,11 @@ document.getElementById('fileInput').addEventListener('change', function (event)
   if (file)
     loadGPX(file).then(data => { 
       if(simplifyBySpeed) {
-        // timestamps, x,y-coords, treshold speed(km/h)
+        // INPUT: timestamps, x,y-coords, treshold speed(km/h)
         stationaryBugRemoverSpeed(data.timeArray, data.latlngs, 4);
       }
       if (simplifyByDistance) {
-        // x,y-coords, treshold distance(meters)
+        // INPUT: x,y-coords, treshold distance(meters)
         stationaryBugRemoverDistance(data.latlngs, 10);
       }
       // Dodanie ścieżki do mapy i listy
