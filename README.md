@@ -8,7 +8,7 @@ Aplikacja umożliwia wczytywanie, wyświetlanie i eksport danych z plików GPX, 
    
 ### Wyświetlanie danych na mapie
 - Po wczytaniu plików, dane zostaną automatycznie wyświetlone na mapie.
-- **Pokaż znaczniki**: Zaznacz pole "Show Markers" w menu, aby wyświetlić znaczniki na mapie, które mogą reprezentować ważne punkty lub sekcje trasy.
+- **Pokaż znaczniki**: Zaznacz pole "Show Markers" w menu, aby wyświetlić znaczniki na mapie. Przeciągając znaczniki możesz ręcznie edytować trasę.
 - **Uproszczenie trasy**:
   - **Simplify by Speed**: Zaznacz to pole przed dodaniem pliku, aby uproszczyć trasę na podstawie prędkości.
   - **Simplify by Distance**: Zaznacz to pole przed dodaniem pliku, aby uproszczyć trasę na podstawie odległości między punktami.
