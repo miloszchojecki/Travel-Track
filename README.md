@@ -1,3 +1,8 @@
+### Autorzy
+- Miłosz Chojecki
+- Bartosz Michalak
+- Michał Biszczanik 
+
 ## Jak korzystać z aplikacji do obsługi plików GPX
 
 ### Wstęp
