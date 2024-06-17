@@ -1,5 +1,7 @@
 //inicjalizacja mapy z ustawieniem początkowych współrzędnych
 var map = L.map('map').setView([51.11044, 17.05852], 16);
+
+// narzędzie do eksportu do PNG  (https://github.com/grinat/leaflet-simple-map-screenshoter)
 var simpleMapScreenshoter = L.simpleMapScreenshoter({hidden: true}).addTo(map);
 
 //flagi determinujące, czy uproszczenia ścieżek na podstawie prędkości lub odległości mają być stosowane 
@@ -315,7 +317,7 @@ function stationaryBugRemoverDistance(latlngs, tresholdDistance) {
     var distance = calculateDistance(latlngs[i][0], latlngs[i][1], latlngs[i+1][0], latlngs[i+1][1]); // Odl. w metrach
     if (distance < tresholdDistance) {
       //IDEA: Usuwaj wszystkie punkty poniżej tresholdu, 
-      //jeśli jakiś pkt jest już dalej niż treshold (lub koniec punktów) to opóść for
+      //jeśli jakiś pkt jest już dalej niż treshold (lub koniec punktów) to opuść for
       const pointIndex = i;
       for (let j = i; (distance < tresholdDistance) && (j < latlngs.length - 1); j++) {
         distance = calculateDistance(latlngs[pointIndex][0], latlngs[pointIndex][1], latlngs[j+1][0], latlngs[j+1][1]);
@@ -351,18 +353,18 @@ function stationaryBugRemoverSpeed(timeArray, latlngs, treshholSpeed) {
 //ustawienie domyślnej nazwy dla pliku zrzutu ekranu na podstawie daty
 const defaultName = 'My map ' + new Date().toLocaleDateString().replace(/\./g, '-');
 
-//robienie zrzutu ekranu
+// pokaż menu zapisu do PNG
 screenshotBtn.addEventListener('click', function () {
   document.getElementById('screenshot-options').style.display = 'block'
   screenshotCaption.value = defaultName
 })
 
-//anulowanie zrzutu ekranu
+// ukryj menu zapisu do PNG
 cancelScreenshotBtn.addEventListener('click', function () {
   document.getElementById('screenshot-options').style.display = 'none'
 })
 
-//zapisywanie zrzutu ekranu
+// eksport do PNG
 saveScreenshotBtn.addEventListener('click', function () {
   var name = screenshotCaption.value;
   if(!name)
@@ -370,6 +372,7 @@ saveScreenshotBtn.addEventListener('click', function () {
       name = defaultName;
     }
   simpleMapScreenshoter.takeScreen('blob', {
+      // jeśli zaznaczono, dodaj podpis na dole zdjęcia
       caption: function () {
           if(captionCheckbox.checked)
             return name
@@ -394,6 +397,7 @@ map.on('simpleMapScreenshoter.error', function (event) {
   alert('Unable to take screenshot');
 })
 
+// przycisk eksportu do GPX
 document.querySelector('.exportButton').addEventListener('click', function() {
   exportTracks();
 });
