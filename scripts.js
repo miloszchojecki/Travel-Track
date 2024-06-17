@@ -1,10 +1,10 @@
-//inicjalizacja mapy z ustawieniem początkowych współrzędnych
+// inicjalizacja mapy z ustawieniem początkowych współrzędnych
 var map = L.map('map').setView([51.11044, 17.05852], 16);
 
 // narzędzie do eksportu do PNG  (https://github.com/grinat/leaflet-simple-map-screenshoter)
 var simpleMapScreenshoter = L.simpleMapScreenshoter({hidden: true}).addTo(map);
 
-//flagi determinujące, czy uproszczenia ścieżek na podstawie prędkości lub odległości mają być stosowane 
+// flagi determinujące, czy uproszczenia ścieżek na podstawie prędkości lub odległości mają być stosowane 
 var simplifyBySpeed = false;
 var simplifyByDistance = false;
 
@@ -17,7 +17,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 const mapContainer = document.getElementById('map');
 
-//obsługa dodawania ścieżek z pliku GPX
+// obsługa dodawania ścieżek z pliku GPX
 document.getElementById('fileInput').addEventListener('change', function (event) {
   const file = event.target.files[0];
   if (file)
@@ -43,7 +43,7 @@ document.getElementById('fileInput').addEventListener('change', function (event)
       makeMarkersHidden();
     }
   });
-   //resetowanie wartości input, aby umożliwić ponowne dodanie tego samego pliku
+   // resetowanie wartości input, aby umożliwić ponowne dodanie tego samego pliku
   document.getElementById('fileInput').value = '';
 });
 
@@ -104,7 +104,6 @@ function loadGPX(file) {
       const timeElements = gpx.getElementsByTagName('time');
       const latlngs = [];
       const timeArray = [];
-      //i equal 1 bc 0th time is not connected to any point
       for (let i = 1; i < timeElements.length; i++) {
         const timeValue = timeElements[i].textContent;
         const millis = Date.parse(timeValue);
@@ -241,7 +240,7 @@ simplifyBySpeedToggle.addEventListener('change', function(event) {
     simplifyBySpeed = false;
   }
 });
-// Wł/Wył upraszczanie przez odległośc
+// Wł/Wył upraszczanie przez odległość
 simplifyByDistanceToggle.addEventListener('change', function(event) {
   const isChecked = event.target.checked;
   if (isChecked) {
@@ -255,14 +254,11 @@ const slider = document.getElementById('smoothnessSlider');
 const input = document.getElementById('smoothnessInput');
 const confirmButton = document.getElementById('confirmSmoothness');
 
-// Function to handle confirmation button click
 confirmButton.addEventListener('click', function(event) {
   const smoothness = parseFloat(input.value);
-  if (!isNaN(smoothness)) { // Check if input is a valid number
+  if (!isNaN(smoothness)) {
     slider.value = smoothness;
-    // Update smoothness value display
     document.getElementById('smoothnessValue').textContent = smoothness.toFixed(4);
-    // Call the event handler for slider change to update the track
     slider.dispatchEvent(new Event('change'));
   } else {
     alert("Please enter a valid number.");
@@ -279,7 +275,7 @@ slider.addEventListener('change', function(event) {
   // smoothness = wartość zczytana ze slidera
   document.getElementById('smoothnessValue').textContent = smoothness.toFixed(4);
   const latlngs = currentTrack.getLatLngs();
-  const simplifiedLatlngs = douglasPeucker(latlngs, smoothness); // the higher second parameter the more points we remove
+  const simplifiedLatlngs = douglasPeucker(latlngs, smoothness); // im wiekszy drugi parametr tym wiecej punktow usuwamy
   addTrackToMap(simplifiedLatlngs);
   var str = "Simplified " + smoothness.toString()
   addTrackToList(str);
@@ -309,15 +305,15 @@ function calculateSpeed(lat1, lon1, time1, lat2, lon2, time2) {
 }
 
 // Upraszczanie miejsc, gdzie użytkownik stał, bazując na odległości między nast. punktami
-// treshold podajemy w metrach 
+// threshold podajemy w metrach 
 function stationaryBugRemoverDistance(latlngs, tresholdDistance) {
   var simplifiedLatlngs = [];
   for (let i = 0; i < latlngs.length - 1; i++) {
-    //Usuń jeśli distance < treshold
+    //Usuń jeśli distance < threshold
     var distance = calculateDistance(latlngs[i][0], latlngs[i][1], latlngs[i+1][0], latlngs[i+1][1]); // Odl. w metrach
     if (distance < tresholdDistance) {
       //IDEA: Usuwaj wszystkie punkty poniżej tresholdu, 
-      //jeśli jakiś pkt jest już dalej niż treshold (lub koniec punktów) to opuść for
+      //jeśli jakiś pkt jest już dalej niż threshold (lub koniec punktów) to opuść for
       const pointIndex = i;
       for (let j = i; (distance < tresholdDistance) && (j < latlngs.length - 1); j++) {
         distance = calculateDistance(latlngs[pointIndex][0], latlngs[pointIndex][1], latlngs[j+1][0], latlngs[j+1][1]);
@@ -334,11 +330,11 @@ function stationaryBugRemoverDistance(latlngs, tresholdDistance) {
 }
 
 // Upraszczanie miejsc, gdzie użytkownik stał, bazując na prędkości między dwoma punktami
-// treshold podajemy w km/h
+// threshold podajemy w km/h
 function stationaryBugRemoverSpeed(timeArray, latlngs, treshholSpeed) {
   var simplifiedLatlngs = [];
   for (let i = 0; i < latlngs.length - 1; i++) {
-    //Usuń jeśli speed < treshold
+    //Usuń jeśli speed < threshold
     const speed = calculateSpeed(latlngs[i][0], latlngs[i][1], timeArray[i], latlngs[i+1][0], latlngs[i+1][1], timeArray[i+1]);
     if (speed < treshholSpeed) {} 
     else {
